@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+		<script src="https://kit.fontawesome.com/bad01150ed.js" crossorigin="anonymous"></script>
+		<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+		<link rel="stylesheet" href="style.css" />
+		<title>Rock Game</title>
+	</head>
+
+	<body>
+		<div id="modal">
+			<div class="settings">
+				<label for="sound-check">
+					<span onclick="document.querySelector('#modal').style.display = 'none'" class="setting-close"
+						><i class="fas fa-window-close"></i
+					></span>
+					Turn on the sound ? &nbsp;&nbsp;
+					<input
+						type="checkbox"
+						name="sound-check"
+						id="set-sound"
+						onchange="Rock.isSound.checked = !Rock.isSound.checked;Rock.toggleFonSound();document.querySelector('#modal').style.display = 'none'"
+					/>
+				</label>
+			</div>
+		</div>
+		<div class="game center">
+			<label class="sound-icon">
+				<input type="checkbox" name="sound" id="sound-fon" onchange="Rock.toggleFonSound()" hidden />
+				<i class="fas fa-volume-mute"></i>
+			</label>
+
+			<h1 class="game-heading">Rock Game</h1>
+
+			<div class="game-score">
+				<div id="notice" class="game-score__notice">Make your choice</div>
+
+				<div id="human" class="game-score__human">
+					<i class="fas fa-user-tie"></i>
+					<output id="human-score" class="game-score__human-score">0</output>
+				</div>
+
+				<div class="game-score__colon">:</div>
+
+				<div id="computer" class="game-score__computer">
+					<output id="computer-score" class="game-score__computer-score">0</output>
+					<i class="fas fa-laptop-code"></i>
+				</div>
+			</div>
+
+			<form name="board" action="#" class="game-board" oninput="Rock.game(+item.value),board.reset()">
+				<div class="game-board__item">
+					<label data-label="Rock">
+						<i class="fab fa-atlassian"></i>
+						<input type="radio" name="item" hidden value="0" />
+					</label>
+				</div>
+
+				<div class="game-board__item">
+					<label data-label="Scissors">
+						<i class="fas fa-cut"></i>
+						<input type="radio" name="item" hidden value="1" />
+					</label>
+				</div>
+
+				<div class="game-board__item">
+					<label data-label="Paper">
+						<i class="far fa-sticky-note"></i>
+						<input type="radio" name="item" hidden value="2" />
+					</label>
+				</div>
+			</form>
+			<a href="game.html" class="button-new">New Game</a>
+		</div>
+
+		<script>
+			const Rock = {
+				arrItems: ['Rock', 'Scissors', 'Paper'],
+				result: null,
+				noticeEl: null,
+				human: null,
+				computer: null,
+				humanScore: null,
+				computerScore: null,
+				isSound: null,
+				audioDrawn: null,
+				audioWinner: null,
+				audioLoser: null,
+				audioFon: null,
+
+				init() {
+					this.noticeEl = document.getElementById('notice');
+					this.human = document.getElementById('human');
+					this.computer = document.getElementById('computer');
+					this.humanScore = document.getElementById('human-score');
+					this.computerScore = document.getElementById('computer-score');
+					this.isSound = document.getElementById('sound-fon');
+					this.audioDrawn = new Audio('https://raw.githubusercontent.com/wowankz/static/master/rock_game/sounds/drawn-game.mp3');
+					this.audioWinner = new Audio('https://raw.githubusercontent.com/wowankz/static/master/rock_game/sounds/winner-voice.mp3');
+					this.audioLoser = new Audio('https://raw.githubusercontent.com/wowankz/static/master/rock_game/sounds/game_over.mp3');
+					this.audioFon = new Audio('https://raw.githubusercontent.com/wowankz/static/master/rock_game/sounds/fon-audio.mp3');
+					this.audioFon.loop = true;
+					this.audioFon.volume = 0.3;
+					this.isSound.checked ? this.audioFon.play() : this.audioFon.pause();
+				},
+
+				toggleFonSound() {
+					if (this.isSound.checked) {
+						this.audioFon.play();
+						console.log('toggleSound play');
+					} else {
+						this.audioFon.pause();
+						console.log('toggleSound stop');
+					}
+				},
+
+				renderer() {
+					if (+this.humanScore.value > +this.computerScore.value) {
+						this.human.style.color = '#4CAF50';
+						this.computer.style.color = '#EF5350';
+					}
+					if (+this.humanScore.value < +this.computerScore.value) {
+						this.human.style.color = '#EF5350';
+						this.computer.style.color = '#4CAF50';
+					}
+					if (+this.humanScore.value === +this.computerScore.value) {
+						this.human.style.color = '#4caf50';
+						this.computer.style.color = '#4caf50';
+					}
+					this.noticeEl.innerHTML = this.result;
+				},
+
+				game(me) {
+					let comp = Math.floor(Math.random() * 3);
+					this.check(me, comp);
+					this.renderer();
+					console.log(this.result);
+				},
+
+				check(a, b) {
+					if ((a === 0 && b === 1) || (a === 1 && b === 2) || (a === 2 && b === 0)) {
+						this.result = `Round was Human Won.<br> Human : ${this.arrItems[a]} / Computer : ${this.arrItems[b]}`;
+						this.humanScore.value = ++this.humanScore.value;
+						this.isSound.checked ? this.audioWinner.play() : () => {};
+					} else if (a === b) {
+						this.result = `Round was Drawn game.<br> Human : ${this.arrItems[a]} / Computer : ${this.arrItems[b]}`;
+						this.isSound.checked ? this.audioDrawn.play() : () => {};
+					} else {
+						this.result = `Round was Computer Won.<br> Human : ${this.arrItems[a]} / Computer : ${this.arrItems[b]}`;
+						this.computerScore.value = ++this.computerScore.value;
+						this.isSound.checked ? this.audioLoser.play() : () => {};
+					}
+				},
+			};
+
+			Rock.init();
+		</script>
+	</body>
+</html>
